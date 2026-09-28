@@ -1,0 +1,44 @@
+
+From: urgent-security@paypa1-verify.tk
+Subject: URGENT! Your PayPal Account Has Been Suspended
+Body: Dear valued customer,
+Your PayPal account will be permanently closed within 24 hours!
+Click here IMMEDIATELY to verify your account: http://paypal-secure.tk/verify
+We need you to confirm your credit card number, CVV, and social security number.
+ACT NOW or lose access forever!
+
+---
+
+From: support@amazon.com
+Subject: Your order #12345 has shipped
+Body: Hello,
+Your recent order has been shipped and will arrive in 2-3 business days.
+Track your package: https://www.amazon.com/track
+Thank you for shopping with Amazon!
+
+---
+
+From: winner@lottery-prize.ga
+Subject: CONGRATULATIONS! You Won $5,000,000!!!
+Body: You have been selected as the lucky winner!
+Claim your prize NOW: http://claim-prize.tk/win
+Send us your bank account details immediately to receive your money.
+This is a LIMITED TIME OFFER - expires today!
+
+---
+
+From: noreply@github.com
+Subject: New login from Chrome on Windows
+Body: A new login to your GitHub account was detected.
+Device: Chrome on Windows
+Location: New York, US
+If this wasn't you, secure your account at https://github.com/settings/security
+
+---
+
+From: admin@micros0ft-security.xyz
+Subject: Your Microsoft account needs verification
+Body: Urgent security alert!
+Your Microsoft account password has been compromised.
+Click here to update: http://microsoft-verify.tk/login
+Enter your current password and credit card to verify identity.

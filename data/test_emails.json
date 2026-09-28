@@ -1,0 +1,21 @@
+
+[
+  {
+    "sender": "security@bank-verify.tk",
+    "subject": "URGENT: Verify your bank account NOW",
+    "body": "Your account will be locked! Verify immediately: http://bank-secure.tk",
+    "links": ["http://bank-secure.tk"]
+  },
+  {
+    "sender": "admin@company.com",
+    "subject": "Weekly team meeting",
+    "body": "Reminder: Team meeting tomorrow at 10 AM. Zoom link: https://zoom.us/j/12345",
+    "links": ["https://zoom.us/j/12345"]
+  },
+  {
+    "sender": "prize@winner.ga",
+    "subject": "You won $1,000,000!",
+    "body": "Claim your lottery prize: http://claim-now.tk\nProvide your SSN and bank details.",
+    "links": ["http://claim-now.tk"]
+  }
+]

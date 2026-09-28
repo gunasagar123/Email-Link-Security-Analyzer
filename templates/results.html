@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Results{% endblock %}
+
+{% block content %}
+<div class="results-page">
+    <div class="container">
+        <!-- Back Navigation -->
+        <div class="back-navigation">
+            <a href="{{ url_for('dashboard') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Dashboard</span>
+            </a>
+        </div>
+
+        <!-- Results Header -->
+        <div class="results-header">
+            <div class="header-icon-large results-gradient">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h1 class="results-title">Analysis Complete</h1>
+            <p class="results-timestamp">
+                <i class="fas fa-clock"></i>
+                Completed at {{ statistics.timestamp }}
+            </p>
+        </div>
+
+        <!-- Statistics Panel -->
+        <div class="statistics-panel">
+            <h2 class="panel-title">
+                <i class="fas fa-chart-bar"></i>
+                Overall Statistics
+            </h2>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-icon total-icon">
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <div class="stat-value total">{{ statistics.total }}</div>
+                    <div class="stat-label">Total Items</div>
+                </div>
+                
+                <div class="stat-box">
+                    <div class="stat-icon suspicious-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-value suspicious">{{ statistics.suspicious }}</div>
+                    <div class="stat-label">Suspicious</div>
+                    <div class="stat-percentage danger-text">
+                        {{ "%.1f"|format((statistics.suspicious / statistics.total * 100) if statistics.total > 0 else 0) }}%
+                    </div>
+                </div>
+                
+                <div class="stat-box">
+                    <div class="stat-icon safe-icon">
+                        <i class="fas fa-shield-check"></i>
+                    </div>
+                    <div class="stat-value safe">{{ statistics.safe }}</div>
+                    <div class="stat-label">Safe</div>
+                    <div class="stat-percentage success-text">
+                        {{ "%.1f"|format((statistics.safe / statistics.total * 100) if statistics.total > 0 else 0) }}%
+                    </div>
+                </div>
+                
+                <div class="stat-box">
+                    <div class="stat-icon average-icon">
+                        <i class="fas fa-gauge-high"></i>
+                    </div>
+                    <div class="stat-value average">{{ statistics.avg_score }}</div>
+                    <div class="stat-label">Avg Risk Score</div>
+                    <div class="stat-percentage">out of 100</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Threat Level Legend -->
+        <div class="threat-legend">
+            <h3 class="legend-title">Threat Level Guide</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <span class="legend-badge critical">🚨 CRITICAL</span>
+                    <span class="legend-desc">85-100: Immediate threat, do not interact</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-badge high">🔴 HIGH</span>
+                    <span class="legend-desc">70-84: High risk, verify independently</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-badge medium">🟠 MEDIUM</span>
+                    <span class="legend-desc">50-69: Exercise caution</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-badge low">🟡 LOW</span>
+                    <span class="legend-desc">25-49: Minor concerns</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-badge safe">🟢 SAFE</span>
+                    <span class="legend-desc">0-24: No threats detected</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suspicious Items Section -->
+        {% if suspicious_results %}
+        <div class="results-section">
+            <div class="section-header-results">
+                <h2 class="results-section-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Suspicious Items ({{ suspicious_results|length }})
+                </h2>
+                <span class="section-badge danger">Requires Attention</span>
+            </div>
+
+            <div class="results-grid">
+                {% for result in suspicious_results %}
+                <div class="result-card {{ result.threat_level|lower }}">
+                    <div class="result-header">
+                        <div class="result-content">
+                            <div class="result-meta">
+                                <span class="result-type">
+                                    {% if result.analysis_type == 'email' %}
+                                        <i class="fas fa-envelope"></i> Email
+                                    {% else %}
+                                        <i class="fas fa-link"></i> Link
+                                    {% endif %}
+                                </span>
+                                <span class="result-number">#{{ loop.index }}</span>
+                            </div>
+                            <h3 class="result-title">{{ result.content[:150] }}{% if result.content|length > 150 %}...{% endif %}</h3>
+                        </div>
+                        <div class="result-badge-container">
+                            <div class="threat-badge {{ result.threat_level|lower }}">
+                                {{ result.threat_emoji }} {{ result.threat_level }}
+                            </div>
+                            <div class="risk-score-badge">
+                                <div class="score-circle {{ result.threat_level|lower }}">
+                                    <svg viewBox="0 0 36 36" class="circular-chart">
+                                        <path class="circle-bg"
+                                            d="M18 2.0845
+                                            a 15.9155 15.9155 0 0 1 0 31.831
+                                            a 15.9155 15.9155 0 0 1 0 -31.831"
+                                        />
+                                        <path class="circle"
+                                            stroke-dasharray="{{ result.risk_score }}, 100"
+                                            d="M18 2.0845
+                                            a 15.9155 15.9155 0 0 1 0 31.831
+                                            a 15.9155 15.9155 0 0 1 0 -31.831"
+                                        />
+                                        <text x="18" y="20.35" class="percentage">{{ result.risk_score }}</text>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if result.flags %}
+                    <div class="flags-section">
+                        <div class="flags-header">
+                            <i class="fas fa-flag"></i>
+                            <span class="flags-title">Detected Issues ({{ result.flags|length }})</span>
+                        </div>
+                        <div class="flags-list">
+                            {% for flag in result.flags %}
+                            <div class="flag-item">
+                                <i class="fas fa-circle-exclamation"></i>
+                                <span>{{ flag }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="result-footer">
+                        <button class="btn-detail" onclick="toggleDetails(this)">
+                            <i class="fas fa-chevron-down"></i>
+                            <span>Show Full Content</span>
+                        </button>
+                        <div class="result-actions-inline">
+                            <button class="btn-icon" title="Report">
+                                <i class="fas fa-flag"></i>
+                            </button>
+                            <button class="btn-icon" title="Copy">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="result-detail-content">
+                        <div class="detail-box">
+                            <h4>Full Content:</h4>
+                            <pre>{{ result.content }}</pre>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Safe Items Section -->
+        {% if safe_results %}
+        <div class="results-section">
+            <div class="section-header-results">
+                <h2 class="results-section-title">
+                    <i class="fas fa-shield-check"></i>
+                    Safe Items ({{ safe_results|length }})
+                </h2>
+                <span class="section-badge success">No Threats Detected</span>
+            </div>
+
+            <div class="safe-results-compact">
+                {% for result in safe_results %}
+                <div class="safe-item">
+                    <div class="safe-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="safe-content">
+                        <div class="safe-title">{{ result.content[:100] }}{% if result.content|length > 100 %}...{% endif %}</div>
+                        <div class="safe-meta">
+                            <span class="safe-type">
+                                {% if result.analysis_type == 'email' %}
+                                    <i class="fas fa-envelope"></i> Email
+                                {% else %}
+                                    <i class="fas fa-link"></i> Link
+                                {% endif %}
+                            </span>
+                            <span class="safe-score">
+                                Risk Score: {{ result.risk_score }}/100
+                            </span>
+                        </div>
+                    </div>
+                    <div class="safe-badge">
+                        🟢 SAFE
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Recommendations Panel -->
+        <div class="recommendations-panel">
+            <h2 class="panel-title">
+                <i class="fas fa-lightbulb"></i>
+                Security Recommendations
+            </h2>
+            
+            {% if statistics.suspicious > 0 %}
+            <div class="recommendation-alert danger">
+                <div class="alert-icon">
+                    <i class="fas fa-shield-exclamation"></i>
+                </div>
+                <div class="alert-content">
+                    <h3>⚠️ Suspicious Content Detected</h3>
+                    <ul class="recommendation-list">
+                        <li><strong>DO NOT</strong> click on any links from suspicious items</li>
+                        <li><strong>DO NOT</strong> provide any personal information</li>
+                        <li><strong>DO NOT</strong> download attachments from flagged emails</li>
+                        <li><strong>VERIFY</strong> sender identity through official channels</li>
+                        <li><strong>REPORT</strong> suspicious emails to your IT department</li>
+                    </ul>
+                </div>
+            </div>
+            {% else %}
+            <div class="recommendation-alert success">
+                <div class="alert-icon">
+                    <i class="fas fa-shield-check"></i>
+                </div>
+                <div class="alert-content">
+                    <h3>✅ All Items Appear Safe</h3>
+                    <ul class="recommendation-list">
+                        <li>No immediate threats detected in your content</li>
+                        <li>Always remain vigilant with unexpected communications</li>
+                        <li>Verify important requests through official channels</li>
+                        <li>Keep your security software up to date</li>
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="recommendation-tips">
+                <div class="tip-card-small">
+                    <i class="fas fa-user-shield"></i>
+                    <div>
+                        <strong>Stay Informed</strong>
+                        <p>Learn about latest phishing techniques</p>
+                    </div>
+                </div>
+                <div class="tip-card-small">
+                    <i class="fas fa-envelope-circle-check"></i>
+                    <div>
+                        <strong>Enable 2FA</strong>
+                        <p>Add extra security to your accounts</p>
+                    </div>
+                </div>
+                <div class="tip-card-small">
+                    <i class="fas fa-graduation-cap"></i>
+                    <div>
+                        <strong>Education</strong>
+                        <p>Train team members on security</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="result-actions">
+            <a href="{{ url_for('dashboard') }}" class="btn-secondary">
+                <i class="fas fa-home"></i>
+                <span>Back to Dashboard</span>
+            </a>
+            <button class="btn-secondary" onclick="window.print()">
+                <i class="fas fa-print"></i>
+                <span>Print Report</span>
+            </button>
+            <button class="btn-primary" onclick="window.location.reload()">
+                <i class="fas fa-rotate-right"></i>
+                <span>Analyze Another</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleDetails(button) {
+    const card = button.closest('.result-card');
+    const detailContent = card.querySelector('.result-detail-content');
+    const icon = button.querySelector('i');
+    const text = button.querySelector('span');
+    
+    if (detailContent.style.display === 'none' || !detailContent.style.display) {
+        detailContent.style.display = 'block';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+        text.textContent = 'Hide Full Content';
+    } else {
+        detailContent.style.display = 'none';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+        text.textContent = 'Show Full Content';
+    }
+}
+
+// Print styling
+window.addEventListener('beforeprint', () => {
+    document.querySelectorAll('.result-detail-content').forEach(el => {
+        el.style.display = 'block';
+    });
+});
+
+window.addEventListener('afterprint', () => {
+    document.querySelectorAll('.result-detail-content').forEach(el => {
+        el.style.display = 'none';
+    });
+});
+</script>
+{% endblock %}

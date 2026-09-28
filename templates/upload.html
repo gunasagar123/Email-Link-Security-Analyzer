@@ -1,0 +1,509 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if analysis_type == 'email' %}Email Analysis
+{% elif analysis_type == 'link' %}Link Analysis
+{% else %}Manual Entry
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="upload-page">
+    <div class="container">
+        <!-- Back Button -->
+        <div class="back-navigation">
+            <a href="{{ url_for('dashboard') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Dashboard</span>
+            </a>
+        </div>
+
+        <!-- Page Header -->
+        <div class="upload-header">
+            {% if analysis_type == 'email' %}
+                <div class="header-icon email-gradient">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                <h1 class="upload-title">Batch Email Analysis</h1>
+                <p class="upload-subtitle">Upload a file containing multiple emails to scan for phishing attempts</p>
+            {% elif analysis_type == 'link' %}
+                <div class="header-icon link-gradient">
+                    <i class="fas fa-link"></i>
+                </div>
+                <h1 class="upload-title">Batch Link Analysis</h1>
+                <p class="upload-subtitle">Upload a file with URLs to check for malicious domains and phishing sites</p>
+            {% else %}
+                <div class="header-icon manual-gradient">
+                    <i class="fas fa-pen-to-square"></i>
+                </div>
+                <h1 class="upload-title">Quick Analysis</h1>
+                <p class="upload-subtitle">Instantly analyze a suspicious email or link</p>
+            {% endif %}
+        </div>
+
+        <!-- Upload Container -->
+        <div class="upload-container">
+            {% if analysis_type in ['email', 'link'] %}
+            <!-- File Upload Section -->
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-zone" id="uploadZone">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-arrow-up"></i>
+                    </div>
+                    <h3 class="upload-text">Drag & Drop Your File Here</h3>
+                    <p class="upload-subtext">or click to browse files</p>
+                    <input type="file" id="fileInput" class="file-input" accept=".txt,.json,.csv,.eml,.msg">
+                    <button type="button" class="btn-browse" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-folder-open"></i>
+                        Browse Files
+                    </button>
+                    
+                    <div class="supported-formats-info">
+                        <p class="formats-label">Supported formats:</p>
+                        <div class="format-tags">
+                            {% if analysis_type == 'email' %}
+                                <span class="format-tag">.TXT</span>
+                                <span class="format-tag">.JSON</span>
+                                <span class="format-tag">.CSV</span>
+                                <span class="format-tag">.EML</span>
+                                <span class="format-tag">.MSG</span>
+                            {% else %}
+                                <span class="format-tag">.TXT</span>
+                                <span class="format-tag">.CSV</span>
+                                <span class="format-tag">ANY TEXT</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File Info Panel -->
+                <div class="file-info" id="fileInfo">
+                    <div class="file-details">
+                        <div class="file-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="file-meta">
+                            <div class="file-name" id="fileName">No file selected</div>
+                            <div class="file-size" id="fileSize"></div>
+                        </div>
+                        <button type="button" class="btn-remove" id="removeFile">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">Ready to analyze</div>
+                    </div>
+
+                    <button type="button" class="btn-analyze" id="analyzeBtn" onclick="uploadAndAnalyze()">
+                        <i class="fas fa-magnifying-glass-chart"></i>
+                        <span>Analyze File</span>
+                    </button>
+                </div>
+            </div>
+
+            {% else %}
+            <!-- Manual Entry Section -->
+            <div class="manual-entry-section">
+                <div class="entry-tabs">
+                    <button class="tab-btn active" data-tab="email-entry" onclick="switchTab('email-entry')">
+                        <i class="fas fa-envelope"></i>
+                        Email Entry
+                    </button>
+                    <button class="tab-btn" data-tab="link-entry" onclick="switchTab('link-entry')">
+                        <i class="fas fa-link"></i>
+                        Link Entry
+                    </button>
+                </div>
+
+                <!-- Email Entry Form -->
+                <div class="tab-content active" id="email-entry">
+                    <form class="manual-entry-form" id="emailForm">
+                        <div class="form-group">
+                            <label for="sender" class="form-label">
+                                <i class="fas fa-user"></i> Sender Email (Optional)
+                            </label>
+                            <input 
+                                type="email" 
+                                id="sender" 
+                                class="form-input" 
+                                placeholder="suspicious@example.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subject" class="form-label">
+                                <i class="fas fa-heading"></i> Email Subject (Optional)
+                            </label>
+                            <input 
+                                type="text" 
+                                id="subject" 
+                                class="form-input" 
+                                placeholder="Urgent: Verify your account">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="body" class="form-label">
+                                <i class="fas fa-align-left"></i> Email Body <span class="required">*</span>
+                            </label>
+                            <textarea 
+                                id="body" 
+                                class="form-input" 
+                                rows="8" 
+                                placeholder="Paste the suspicious email content here..."
+                                required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="links" class="form-label">
+                                <i class="fas fa-link"></i> Links in Email (Optional)
+                            </label>
+                            <input 
+                                type="text" 
+                                id="links" 
+                                class="form-input" 
+                                placeholder="http://example.com, http://another.com (comma-separated)">
+                            <small class="form-hint">Separate multiple links with commas</small>
+                        </div>
+
+                        <button type="submit" class="btn-analyze">
+                            <i class="fas fa-magnifying-glass-chart"></i>
+                            <span>Analyze Email</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Link Entry Form -->
+                <div class="tab-content" id="link-entry">
+                    <form class="manual-entry-form" id="linkForm">
+                        <div class="form-group">
+                            <label for="url" class="form-label">
+                                <i class="fas fa-globe"></i> URL to Analyze <span class="required">*</span>
+                            </label>
+                            <input 
+                                type="url" 
+                                id="url" 
+                                class="form-input" 
+                                placeholder="https://suspicious-website.com"
+                                required>
+                        </div>
+
+                        <div class="url-preview" id="urlPreview">
+                            <div class="preview-label">
+                                <i class="fas fa-eye"></i> URL Preview
+                            </div>
+                            <div class="preview-box" id="urlPreviewBox">
+                                Enter a URL to see preview
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-analyze">
+                            <i class="fas fa-magnifying-glass-chart"></i>
+                            <span>Analyze Link</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Analysis Tips -->
+            <div class="analysis-tips">
+                <div class="tips-header">
+                    <i class="fas fa-lightbulb"></i>
+                    <h3>Analysis Tips</h3>
+                </div>
+                <div class="tips-list">
+                    {% if analysis_type == 'email' %}
+                        <div class="tip-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Our system checks for suspicious keywords, domain spoofing, and phishing patterns</span>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Files can contain emails in various formats - we'll parse them automatically</span>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Maximum file size: 16MB • Up to 1000 emails per file</span>
+                        </div>
+                    {% elif analysis_type == 'link' %}
+                        <div class="tip-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>We analyze URL structure, domain reputation, and known phishing indicators</span>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Links can be in plain text, CSV, or any format - one per line works best</span>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Maximum file size: 16MB • Up to 1000 links per file</span>
+                        </div>
+                    {% else %}
+                        <div class="tip-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Get instant results for single emails or links</span>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>All fields are analyzed together for comprehensive threat detection</span>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Your data is processed securely and not stored permanently</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="loading-modal" id="loadingModal">
+    <div class="loading-content">
+        <div class="loading-animation">
+            <div class="scanner-line"></div>
+            <div class="loading-icon">
+                <i class="fas fa-shield-halved"></i>
+            </div>
+        </div>
+        <h3 class="loading-title">Analyzing Content</h3>
+        <p class="loading-text" id="loadingText">Processing your file...</p>
+        <div class="loading-progress">
+            <div class="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const analysisType = "{{ analysis_type }}";
+let selectedFile = null;
+
+// Drag and Drop Functionality
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+
+if (uploadZone) {
+    uploadZone.addEventListener('click', () => fileInput.click());
+    
+    uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('drag-over');
+    });
+    
+    uploadZone.addEventListener('dragleave', () => {
+        uploadZone.classList.remove('drag-over');
+    });
+    
+    uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('drag-over');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileSelect(files[0]);
+        }
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFileSelect(e.target.files[0]);
+        }
+    });
+    
+    document.getElementById('removeFile')?.addEventListener('click', () => {
+        selectedFile = null;
+        fileInput.value = '';
+        fileInfo.classList.remove('active');
+        document.getElementById('progressFill').style.width = '0%';
+        document.getElementById('progressText').textContent = 'Ready to analyze';
+    });
+}
+
+function handleFileSelect(file) {
+    selectedFile = file;
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('fileSize').textContent = formatFileSize(file.size);
+    fileInfo.classList.add('active');
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('progressText').textContent = 'Ready to analyze';
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+function uploadAndAnalyze() {
+    if (!selectedFile) {
+        alert('Please select a file first');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    formData.append('type', analysisType);
+    
+    showLoading('Uploading file...');
+    document.getElementById('progressFill').style.width = '30%';
+    document.getElementById('progressText').textContent = 'Uploading...';
+    
+    fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('progressFill').style.width = '100%';
+            document.getElementById('progressText').textContent = 'Analysis complete!';
+            updateLoading('Analysis complete! Redirecting...');
+            setTimeout(() => {
+                window.location.href = data.redirect;
+            }, 1000);
+        } else {
+            hideLoading();
+            alert('Error: ' + data.error);
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressText').textContent = 'Error occurred';
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        alert('Upload failed: ' + error.message);
+        document.getElementById('progressFill').style.width = '0%';
+        document.getElementById('progressText').textContent = 'Upload failed';
+    });
+}
+
+// Manual Entry Functions
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    document.getElementById(tabName).classList.add('active');
+}
+
+// Email Form Submission
+document.getElementById('emailForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const sender = document.getElementById('sender').value;
+    const subject = document.getElementById('subject').value;
+    const body = document.getElementById('body').value;
+    const linksStr = document.getElementById('links').value;
+    
+    if (!body.trim()) {
+        alert('Email body is required');
+        return;
+    }
+    
+    const links = linksStr ? linksStr.split(',').map(l => l.trim()).filter(l => l) : [];
+    
+    showLoading('Analyzing email...');
+    
+    fetch('/api/analyze-manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            type: 'email',
+            sender: sender,
+            subject: subject,
+            body: body,
+            links: links
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateLoading('Analysis complete!');
+            setTimeout(() => {
+                window.location.href = data.redirect;
+            }, 1000);
+        } else {
+            hideLoading();
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        alert('Analysis failed: ' + error.message);
+    });
+});
+
+// Link Form Submission
+document.getElementById('linkForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const url = document.getElementById('url').value;
+    
+    if (!url.trim()) {
+        alert('URL is required');
+        return;
+    }
+    
+    showLoading('Analyzing link...');
+    
+    fetch('/api/analyze-manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            type: 'link',
+            url: url
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateLoading('Analysis complete!');
+            setTimeout(() => {
+                window.location.href = data.redirect;
+            }, 1000);
+        } else {
+            hideLoading();
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        alert('Analysis failed: ' + error.message);
+    });
+});
+
+// URL Preview
+document.getElementById('url')?.addEventListener('input', (e) => {
+    const url = e.target.value;
+    const previewBox = document.getElementById('urlPreviewBox');
+    if (url) {
+        previewBox.textContent = url;
+        previewBox.style.color = 'var(--text-primary)';
+    } else {
+        previewBox.textContent = 'Enter a URL to see preview';
+        previewBox.style.color = 'var(--text-secondary)';
+    }
+});
+
+// Loading Modal
+function showLoading(message) {
+    document.getElementById('loadingModal').classList.add('active');
+    document.getElementById('loadingText').textContent = message;
+}
+
+function updateLoading(message) {
+    document.getElementById('loadingText').textContent = message;
+}
+
+function hideLoading() {
+    document.getElementById('loadingModal').classList.remove('active');
+}
+</script>
+{% endblock %}

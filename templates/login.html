@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="login-page">
+    <!-- Security Quote Section -->
+    <div class="quote-section">
+        <div class="quote-content">
+            <div class="quote-icon">
+                <i class="fas fa-quote-left"></i>
+            </div>
+            <blockquote class="security-quote">
+                <p class="quote-text">
+                    "Security is not a product, but a process. Stay vigilant, stay protected."
+                </p>
+                <footer class="quote-author">— Cybersecurity Principle</footer>
+            </blockquote>
+            
+            <div class="quote-stats">
+                <div class="stat-item">
+                    <div class="stat-number">90%</div>
+                    <div class="stat-label">Phishing Attacks Detected</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">Threats Blocked</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Accuracy Rate</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Form Section -->
+    <div class="login-section">
+        <div class="login-container">
+            <!-- Animated Shield Logo -->
+            <div class="login-logo">
+                <div class="shield-animation">
+                    <svg viewBox="0 0 200 200" class="shield-svg">
+                        <defs>
+                            <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <path class="shield-path" d="M100 20 L170 50 L170 100 Q170 160 100 180 Q30 160 30 100 L30 50 Z" 
+                              fill="url(#shieldGradient)" stroke="none"/>
+                        <path class="shield-check" d="M70 100 L90 120 L130 75" 
+                              fill="none" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <div class="shield-glow"></div>
+                </div>
+                <h1 class="login-title">SECURITY ANALYZER</h1>
+                <p class="login-subtitle">Advanced Phishing Detection System</p>
+            </div>
+
+            <!-- Login Form -->
+            <div class="login-form-wrapper">
+                <form method="POST" action="{{ url_for('login') }}" class="login-form" id="loginForm">
+                    <div class="form-header">
+                        <h2>Welcome Back</h2>
+                        <p>Sign in to protect yourself from threats</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="username" class="form-label">
+                            <i class="fas fa-user"></i> Username
+                        </label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            class="form-input" 
+                            placeholder="Enter your username"
+                            required
+                            autocomplete="username">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">
+                            <i class="fas fa-lock"></i> Password
+                        </label>
+                        <div class="password-input-wrapper">
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password" 
+                                class="form-input" 
+                                placeholder="Enter your password"
+                                required
+                                autocomplete="current-password">
+                            <button type="button" class="password-toggle" onclick="togglePassword()">
+                                <i class="fas fa-eye" id="passwordIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-login">
+                        <span class="btn-text">Sign In</span>
+                        <i class="fas fa-arrow-right btn-icon"></i>
+                    </button>
+
+                    <!-- Demo Credentials -->
+                    <div class="demo-credentials">
+                        <div class="demo-header">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Demo Account</span>
+                        </div>
+                        <div class="demo-info">
+                            <div class="demo-item">
+                                <span class="demo-label">Username:</span>
+                                <code class="demo-value" onclick="copyToClipboard('demo')">demo</code>
+                                <i class="fas fa-copy demo-copy"></i>
+                            </div>
+                            <div class="demo-item">
+                                <span class="demo-label">Password:</span>
+                                <code class="demo-value" onclick="copyToClipboard('demo123')">demo123</code>
+                                <i class="fas fa-copy demo-copy"></i>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Registration Link -->
+                <div class="register-link">
+                    <p>Don't have an account? <a href="{{ url_for('register') }}">Create Account</a></p>
+                </div>
+            </div>
+
+            <!-- Security Features -->
+            <div class="security-features">
+                <div class="feature-item">
+                    <i class="fas fa-lock"></i>
+                    <span>End-to-End Encryption</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-shield-check"></i>
+                    <span>Real-time Protection</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-user-secret"></i>
+                    <span>Privacy Focused</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    const passwordIcon = document.getElementById('passwordIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        passwordIcon.classList.remove('fa-eye');
+        passwordIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        passwordIcon.classList.remove('fa-eye-slash');
+        passwordIcon.classList.add('fa-eye');
+    }
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        // Show copied feedback
+        const notification = document.createElement('div');
+        notification.className = 'copy-notification';
+        notification.textContent = 'Copied!';
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 2000);
+    });
+}
+
+// Add enter key submission
+document.getElementById('loginForm').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        this.submit();
+    }
+});
+</script>
+
+<style>
+.copy-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 10000;
+    animation: slideInRight 0.3s ease;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+</style>
+{% endblock %}
